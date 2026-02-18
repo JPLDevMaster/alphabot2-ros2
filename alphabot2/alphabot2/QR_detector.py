@@ -79,6 +79,11 @@ class QRDetector(Node):
         # Reset QR content
         self.qr_content = ""
 
+        # Check if we have received a valid image yet. 
+        # An empty CompressedImage has an empty .data field.
+        if not self.last_compressed_image.data:
+            return
+
         # Convert from CompressedImage to a OpenCV image using cv_bridge
         cv2_image = self.cv_bridge.compressed_imgmsg_to_cv2(self.last_compressed_image, desired_encoding="passthrough")
 
