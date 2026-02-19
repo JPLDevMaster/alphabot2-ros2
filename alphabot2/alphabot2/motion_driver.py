@@ -143,6 +143,10 @@ class MotionDriver(Node):
 
         self.get_logger().info("Node init ...")
 
+        # Declare the ROS 2 Parameter that enables/disables the obstacle avoidance emergency stop.
+        # (if enabled, the robot will stop when an obstacle is detected by the IR sensors)
+        self.declare_parameter('use_obstacle_avoidance_emergency_stop', True)
+
         # Create the timer (called by rclpy.spin()) with its callback function
         self.spin_timer = self.create_timer(SPIN_TIMER_PERIOD_SEC, self.spin_timer_callback)
 
@@ -271,21 +275,24 @@ class MotionDriver(Node):
         It sets the speeds (-100 < x < 100) that have to be applied to the wheels, considering eventual obstacles.
         :param cmd_vel_msg: received Twist message.
         """
+        # Get the current value of the parameter.
+        use_emergency_stop = self.get_parameter('use_obstacle_avoidance_emergency_stop').get_parameter_value().bool_value
+
         # Update the timestamp
         self.last_received_vel_timestamp_sec = self.get_clock().now().to_msg().sec
 
-        # Get the linear and the angular components
+        # Get the linear and the angular components.
         linear = cmd_vel_msg.linear.x
         angular = cmd_vel_msg.angular.z
         self.get_logger().info(f"Received cmd_vel >> "
                                f"linear={cmd_vel_msg.linear.x:.3}, angular={cmd_vel_msg.angular.z:.3}")
 
-        # Prevent forward motion if there is an obstacle
-        if self.obstacle_detected and linear > 0:
+        # Prevent forward motion if there is an obstacle (if the option is turned on).
+        if use_emergency_stop and self.obstacle_detected and linear > 0:
             self.get_logger().warn(f"Forced linear=0 >> forward motion not permitted due to an obstacle")
             linear = 0
 
-        # Set wheels speed
+        # Set wheels speed.
         self.set_wheels_speed(linear_velocity=linear, angular_rate=angular)
 
     def obstacles_sub_callback(self, obstacle_msg):
@@ -294,13 +301,20 @@ class MotionDriver(Node):
         It brakes the motors if there are obstacles.
         :param obstacle_msg: received Obstacle message.
         """
-        # If there is an obstacle
+        # Get the current value of the parameter.
+        use_emergency_stop = self.get_parameter('use_obstacle_avoidance_emergency_stop').get_parameter_value().bool_value
+
+        # Check if there is an obstacle.
         if obstacle_msg.left_obstacle or obstacle_msg.right_obstacle:
-            # If the motors have not been braked and the obstacle has not been detected yet
+
+            # If the motors have not been braked and the obstacle has not been detected yet.
             if not self.braked and not self.obstacle_detected:
                 self.obstacle_detected = True
-                self.get_logger().warn(f"Braking >> obstacle detected")
-                self.brake()
+                
+                # Only call brake() if the parameter is True.
+                if use_emergency_stop:
+                    self.get_logger().warn(f"Braking >> obstacle detected")
+                    self.brake()
         else:
             self.obstacle_detected = False
 
