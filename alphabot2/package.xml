@@ -7,15 +7,17 @@
   <maintainer email="m.rizzo006@studenti.unibs.it">Michele Rizzo</maintainer>
   <license>Apache License 2.0</license>
 
-  <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
   <test_depend>python3-pytest</test_depend>
+  <test_depend>ament_copyright</test_depend>
 
+  <exec_depend>tf2_ros</depend>
+  <exec_depend>nav_msgs</depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
-  <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>alphabot2_interfaces</exec_depend>
 
   <export>
