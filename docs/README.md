@@ -54,22 +54,24 @@ chmod +x install_alphabot2.sh
 ./install_alphabot2.sh
 ```
 
-### 2. Installer Configuration Parameters
+### 2. What the Robot Installer Configures
 
 During execution, the script will prompt you for the following configuration details. Have them ready:
 
-* **ROS2 Workspace Path:** Where to clone and build the code (Default: `~/alphabot2_ws`).
-* **SWAP Size:** Dynamic swap creation to prevent RAM crashes during compilation (Default: `1GB`). It is advisable to use at least 500MB if you have a 1GB RAM Pi version.
-* **Lab Wi-Fi Name (SSID) & Password:** The primary network the robot should connect to automatically every time it boots up.
-* **Static IP:** A unique IP address required for this specific robot on the Lab/Work network (force static IP for easier ssh connections).
-* **Gateway IP:** The router's gateway IP for the Lab/Work network.
+| Parameter | Default | Description |
+| :--- | :--- | :--- |
+| **Workspace Path** | `~/alphabot2_ws` | The directory where the ROS 2 workspace will be cloned and built. |
+| **SWAP Size** | `2GB` | Creates a swap file to prevent out-of-memory errors during C++ compilation. Enter `0` to skip. |
+| **Lab/Main Wi-Fi (SSID)** | *None (Required)* | The name of your primary local Wi-Fi network. |
+| **Wi-Fi Password** | *None (Required)* | The WPA2 password for your primary network (minimum 8 characters). |
+| **Static IP** | *None (Required)* | A unique static IP address for the robot on the primary network (e.g., `192.168.1.50`). |
+| **Gateway IP** | *Auto-calculated* | The network router's IP address (usually ends in `.1`). |
+| **ROS_DOMAIN_ID** | `0` | The ROS 2 domain ID (0-101) used to isolate this robot's ROS traffic from other devices. |
 
-### 3. Network Failover Logic
-
-Once installed, the robot uses a dual-priority network system:
-
-1. **Priority 1:** It will attempt to connect to your specified Lab/Work Wi-Fi using the Static IP.
-2. **Priority 2 (Fallback):** If the Lab/Work Wi-Fi is unreachable (e.g., in the field), the robot will automatically create its own Access Point called **`AlphaBot2-Hotspot`** (Password: `alphabot2`). You can connect to this network and SSH into the robot at `10.42.0.1`. The creation of this automated hotspot may take up to 5 minutes, so please be patient.
+**📡 Automatic Failover Hotspot** To prevent the robot from becoming inaccessible if the primary Wi-Fi drops, the installer automatically configures a fallback network. If the robot cannot connect to the preset Wi-Fi on boot, it will broadcast its own hotspot so you can still SSH into it:
+* **Network Name:** `AlphaBot2-Hotspot`
+* **Password:** `alphabot2-robot`
+* **Robot IP Address:** `10.42.0.1`
 
 ---
 
@@ -81,7 +83,7 @@ Run the following commands on **your personal computer**'s terminal to enable RO
 
 ```bash
 source /opt/ros/humble/setup.bash
-export ROS_DOMAIN_ID=0
+export ROS_DOMAIN_ID=<YOUR_CHOSEN_ID>  # Match the ID you entered during the robot installation! (Default: 0)
 export ROS_LOCALHOST_ONLY=0
 ```
 
